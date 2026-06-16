@@ -20,7 +20,7 @@ Follow every rule literally. Do not soften, skip, or reinterpret a rule because 
 5. Replying in Thai, technical terms kept in English?
 6. Flattery, hedging ("might possibly"), or rubber-stamp ("LGTM")? → delete, state directly.
 7. Mixing modes, mixing behavior change with refactor, or "while I'm here" work?
-8. **FORMAT CHECK (literal text scan, not introspection):** does the response contain a claim-word (`done`, `เสร็จ`, `เสร็จแล้ว`, `เรียบร้อย`, `พร้อมใช้`, `ใช้ได้แล้ว`, `complete`, `finished`, `ready`, `works`, `should work`, `looks good`, `LGTM`, or equivalent) without a `VERIFIED:` / `NOT VERIFIED:` block immediately above it? → response invalid, rewrite: paste the block, or replace the claim-word with a precise statement of what was actually accomplished. No third option.
+8. **FORMAT CHECK (literal text scan, not introspection):** does the response contain a claim-word (`done`, `เสร็จ`, `เสร็จแล้ว`, `เรียบร้อย`, `พร้อมใช้`, `ใช้ได้แล้ว`, `complete`, `finished`, `ready`, `works`, `should work`, `looks good`, `LGTM`, or equivalent) without a `VERIFIED:` / `NOT VERIFIED:` block immediately above it? → response invalid, rewrite: paste the block, or replace the claim-word with a precise statement of what was actually accomplished. No third option. (Enforced mechanically by the Stop hook — see MECHANICAL ENFORCEMENT. The hook is the net; it does not excuse skipping the block.)
 9. Asking something I could determine myself? → analyze it; ask only genuine judgment/intent calls.
 10. Friction proportional to stakes? Trivial/reversible work just proceeds.
 11. Re-litigating a concern already flagged and waved off? → drop it.
@@ -66,6 +66,12 @@ User repeatedly answers "just do it" / "ทำเลย" → over-asking signal;
     - user must check: run `npm run build`; open /users; check console for hydration warnings
 
 Static checks (type-check, lint, "syntax looks right") do not count as verification. Per-work-type recipes: **Read `references/verify.md` before claiming done on any code change.** When the `verification-runner` subagent is available, delegate the recipe to it — it returns exactly one block; paste as-is. A `NOT VERIFIED:` back means NOT done, and fixing is your job (the subagent never edits code).
+
+## MECHANICAL ENFORCEMENT (hooks + ledger)
+
+Discipline is backed by `hooks/`, not willpower — the parts that can be enforced deterministically are:
+- **`hooks/verify-guard.sh` (Stop hook).** A response carrying a ppdevskill banner + a claim-word + no `VERIFIED:`/`NOT VERIFIED:` block is **blocked at turn end** and the reason fed back to fix this turn. The literal text-scan of self-check 8 is the hook's job now — still write the block, but you need not narrate the scan. **Self-scoping via the banner**: no banner → not a ppdevskill response → hook stays silent, other workflows untouched. **Fail-open**: any error → allow (a discipline hook must never brick a session). Install: README.
+- **Ledger to file.** `#dbg`/`#ft`/`#rf` persist gate state + hypotheses/scope/transforms to `.ppdev/<mode>-ledger.md` — survives context compaction. Re-anchor from the file, not memory (LLMs drift in long sessions; the file does not). Consumers: add `.ppdev/` to `.gitignore`.
 
 ## ROUTING
 

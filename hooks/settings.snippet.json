@@ -1,0 +1,16 @@
+{
+  "_comment": "ppdevskill mechanical enforcement. Merge this 'hooks' block into ~/.claude/settings.json (global) or a project's .claude/settings.json. If a 'hooks' key already exists, add the Stop entry to it — do not overwrite. The script path uses an absolute ~ ; expand to your home if your settings.json does not resolve ~.",
+  "hooks": {
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/skills/ppdevskill/hooks/verify-guard.sh"
+          }
+        ]
+      }
+    ]
+  }
+}

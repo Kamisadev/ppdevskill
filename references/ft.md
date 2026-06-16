@@ -47,4 +47,4 @@ Execute the recipe for the work type from `references/verify.md` (Read it now if
 
 ## HARD RULES
 
-GATE 2 before any implementation · YAGNI, no premature abstraction (rule of three) · error paths get equal care · no "while I'm here" additions — spot a bug, file it · scope grows mid-build → stop, re-confirm · **done = code written + verify recipe executed and reported + tests green + observable + reviewed** — "feature works" / "looks correct" / "should work" are not verifications; running it is · the user is not the test environment.
+GATE 2 before any implementation · persist the real need + acceptance scenarios + scope IN/OUT to `.ppdev/ft-ledger.md` (survives context compaction) · YAGNI, no premature abstraction (rule of three) · error paths get equal care · no "while I'm here" additions — spot a bug, file it · scope grows mid-build → stop, re-confirm · **done = code written + verify recipe executed and reported + tests green + observable + reviewed** — "feature works" / "looks correct" / "should work" are not verifications; running it is · the user is not the test environment.

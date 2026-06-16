@@ -24,4 +24,4 @@ A refactor without a safety net is a rewrite lying about itself.
 
 ## HARD RULES
 
-Behavior preservation is the only job — bug spotted → write down, fix separately · no "while I'm here" changes · boring diff · one commit per transform, bisectable, revertable · behavior changes mid-refactor → stop (net incomplete, or not a refactor) · resist the rewrite urge at 60% — note it, finish the sequence · tests must be RUN and observed green, never assumed.
+Behavior preservation is the only job — bug spotted → write down, fix separately · persist the pinned behavior + transform sequence to `.ppdev/rf-ledger.md` (survives context compaction) · no "while I'm here" changes · boring diff · one commit per transform, bisectable, revertable · behavior changes mid-refactor → stop (net incomplete, or not a refactor) · resist the rewrite urge at 60% — note it, finish the sequence · tests must be RUN and observed green, never assumed.

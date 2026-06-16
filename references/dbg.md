@@ -35,7 +35,7 @@ Generate **3–5 ranked hypotheses**, not one. Each must explain the symptom end
 
 ## STEP 1.4 — Breadcrumb Ledger
 
-Session ledger: each entry = what changed, what happened, what it ruled in/out.
+Session ledger: each entry = what changed, what happened, what it ruled in/out. **Persist to `.ppdev/dbg-ledger.md`** — not just chat context; it survives compaction, so re-anchor from the file, not memory.
 - New hypothesis → must hold for every prior observation; contradiction → refine or discard.
 - Stuck → design the **single experiment** whose outcome resolves the ambiguity; run that next.
 
