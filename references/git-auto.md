@@ -8,6 +8,7 @@ An action, not a mode: it does not replace the active mode's gates — it is the
 - [ ] **Something to commit** — nothing staged/changed → say so, stop. Do not create an empty commit.
 - [ ] **One logical change** — diff mixes unrelated work (behavior change + refactor, two features) → flag it, propose splitting into separate commits. Behavior change and refactor never share a commit (SKILL.md rule 5).
 - [ ] **No secrets / junk** — scan the diff for keys, tokens, `.env`, credentials, large build artifacts, debug probes (`[DBG-...]`). Found → stop, do not commit (ties to `references/sec.md`, A02). Never `git add -A` blindly.
+- [ ] **Stage only files in this change's scope** — `git add <path>` per file the logical change actually touched; never `git add -A` / `git add .` (they sweep in unrelated dirty files, scratch output, local config, editor cruft). Other files dirty in the tree → leave them untouched; a commit pulls in only what *this* change produced. This is the commit-side of surgical work (SKILL.md Principle 13): less junk in history, cleaner reverts, an honest one-purpose diff.
 
 ## COMMIT MESSAGE — only what was done
 
