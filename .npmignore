@@ -1,0 +1,8 @@
+# Runtime/dev artifacts — never ship these
+.ppdev/
+*.bak
+*.bak-*
+*.log
+.DS_Store
+node_modules/
+.git/

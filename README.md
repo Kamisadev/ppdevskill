@@ -32,10 +32,20 @@ Claude Skill ที่เปลี่ยน Claude จาก "AI ที่พ่
 
 ### 1. ติดตั้ง
 
-วางโฟลเดอร์นี้ไว้ใน skills directory ของ Claude Code:
+**วิธีง่ายสุด — ผ่าน npm:**
 
 ```bash
-git clone git@github.com:Kamisadev/ppdevskill.git ~/.claude/skills/ppdevskill
+npx ppdevskill@latest install        # copy เข้า ~/.claude/skills/ + ถามว่าจะ wire hook ไหม
+npx ppdevskill install --with-hook   # wire Stop hook ให้เลย ไม่ถาม
+npx ppdevskill install --no-hook     # ไม่แตะ settings.json (print snippet ให้ paste เอง)
+```
+
+installer จะ backup ของเดิมก่อน, `chmod +x` hook ให้, และไม่ทับ key อื่นใน settings.json. เสร็จแล้ว restart Claude Code.
+
+**หรือ git clone:**
+
+```bash
+git clone https://github.com/Kamisadev/ppdevskill.git ~/.claude/skills/ppdevskill
 ```
 
 โครงสร้างไฟล์:

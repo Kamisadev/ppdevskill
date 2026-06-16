@@ -1,0 +1,44 @@
+{
+  "name": "ppdevskill",
+  "version": "1.0.0",
+  "description": "Unified engineering-partner workflow for Claude Code — debug, build, refactor, review, post-mortem — with hard gates and mechanical (hook-enforced) verification discipline.",
+  "bin": {
+    "ppdevskill": "bin/cli.js"
+  },
+  "files": [
+    "SKILL.md",
+    "references/",
+    "hooks/",
+    "bin/",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "test": "node bin/cli.js --version"
+  },
+  "keywords": [
+    "claude",
+    "claude-code",
+    "claude-skill",
+    "skill",
+    "engineering",
+    "debug",
+    "refactor",
+    "code-review",
+    "workflow",
+    "agent"
+  ],
+  "author": "Kamisadev",
+  "license": "MIT",
+  "homepage": "https://github.com/Kamisadev/ppdevskill#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Kamisadev/ppdevskill.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Kamisadev/ppdevskill/issues"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
