@@ -29,17 +29,19 @@ TRANSCRIPT="$(printf '%s' "$INPUT" | jq -r '.transcript_path // empty' 2>/dev/nu
 [ -z "$TRANSCRIPT" ] && allow
 [ -r "$TRANSCRIPT" ] || allow
 
-# Last assistant message text. Flexible: content may be an array of blocks, a string,
-# or live under .message.text. Extract text blocks and join. (transcript schema not pinned.)
-LAST_OBJ="$(reverse "$TRANSCRIPT" | grep -m1 '"type":"assistant"')"
-[ -z "$LAST_OBJ" ] && allow
-
-TEXT="$(printf '%s' "$LAST_OBJ" | jq -r '
-  (.message.content // .message.text // .message) |
-  if type=="array" then (map(select(.type=="text") | .text) | join("\n"))
-  elif type=="string" then .
-  else tostring end
-' 2>/dev/null)"
+# Last assistant message that actually contains TEXT. A turn's final transcript lines
+# can be tool_use blocks (no text); scan back (capped) to the most recent text-bearing
+# assistant message. Content may be an array of blocks, a string, or under .message.text.
+TEXT=""
+while IFS= read -r line; do
+  case "$line" in *'"type":"assistant"'*) ;; *) continue ;; esac
+  t="$(printf '%s' "$line" | jq -r '
+    (.message.content // .message.text // .message) |
+    if type=="array" then (map(select(.type=="text") | .text) | join("\n"))
+    elif type=="string" then .
+    else "" end' 2>/dev/null)"
+  [ -n "$t" ] && { TEXT="$t"; break; }
+done < <(reverse "$TRANSCRIPT" | head -200)
 [ -z "$TEXT" ] && allow
 
 # Scope: only enforce on ppdevskill responses (identified by the mandatory banner).
