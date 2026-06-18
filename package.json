@@ -1,6 +1,6 @@
 {
   "name": "ppdevskill",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Unified engineering-partner workflow for Claude Code — debug, build, refactor, review, post-mortem — with hard gates and mechanical (hook-enforced) verification discipline.",
   "bin": {
     "ppdevskill": "bin/cli.js"
