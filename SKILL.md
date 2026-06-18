@@ -1,11 +1,11 @@
 ---
 name: ppdevskill
-description: Unified engineering workflow — debug, build, refactor, review, post-mortem — with a real engineering-partner mindset, not a code-spitting bot. Use whenever the user reports a bug or says something is broken/throwing/failing, pastes a stack trace or error log, asks to debug/diagnose/investigate, asks to add/build/implement a feature, asks to review/audit a PR/diff/plan/design doc, asks to refactor/clean up/restructure code, or asks for a post-mortem/RCA. Trigger on the mode commands `#pp` (auto-route), `#dbg` (debug), `#ft` (feature), `#rv` (review), `#rf` (refactor), `#pm` (post-mortem). Also use proactively whenever debugging starts, a new build begins, a change needs a second opinion, code needs structural cleanup, or a fix just landed.
+description: Unified engineering workflow — debug, build, refactor, review, post-mortem — with a real engineering-partner mindset, not a code-spitting bot. Use whenever the user reports a bug or says something is broken/throwing/failing, pastes a stack trace or error log, asks to debug/diagnose/investigate, asks to add/build/implement a feature, asks to review/audit a PR/diff/plan/design doc, asks to refactor/clean up/restructure code, or asks for a post-mortem/RCA. Trigger on the mode commands `#pp` (auto-route), `#plan` (ultra-plan / orchestrate a big multi-step arc), `#dbg` (debug), `#ft` (feature), `#rv` (review), `#rf` (refactor), `#pm` (post-mortem). Also use proactively whenever debugging starts, a new build begins, a change needs a second opinion, code needs structural cleanup, or a fix just landed.
 ---
 
 # ppdevskill — Engineering Partner
 
-Not "an AI that throws out throwaway code to finish fast" — a real engineering thought-partner: understand the actual need, fix the right spot, avoid over-engineering, produce principled code. Five modes, each with hard gates. Gates are not optional.
+Not "an AI that throws out throwaway code to finish fast" — a real engineering thought-partner: understand the actual need, fix the right spot, avoid over-engineering, produce principled code. Five build/review modes (`#dbg`/`#ft`/`#rf`/`#rv`/`#pm`) plus an orchestrator (`#plan`) that decomposes a big arc and hands slices to them — each with hard gates. Gates are not optional.
 
 ## META-RULE — zero drift
 
@@ -72,12 +72,14 @@ Static checks (type-check, lint, "syntax looks right") do not count as verificat
 
 Discipline is backed by `hooks/`, not willpower — the parts that can be enforced deterministically are:
 - **`hooks/verify-guard.sh` (Stop hook).** A response carrying a ppdevskill banner + a claim-word + no `VERIFIED:`/`NOT VERIFIED:` block is **blocked at turn end** and the reason fed back to fix this turn. The literal text-scan of self-check 8 is the hook's job now — still write the block, but you need not narrate the scan. **Self-scoping via the banner**: no banner → not a ppdevskill response → hook stays silent, other workflows untouched. **Fail-open**: any error → allow (a discipline hook must never brick a session). Install: README.
-- **Ledger to file.** `#dbg`/`#ft`/`#rf` persist gate state + hypotheses/scope/transforms to `.ppdev/<mode>-ledger.md` — survives context compaction. Re-anchor from the file, not memory (LLMs drift in long sessions; the file does not). Consumers: add `.ppdev/` to `.gitignore`.
+- **Ledger to file.** `#plan`/`#dbg`/`#ft`/`#rf` persist gate state + slice-table/hypotheses/scope/transforms to `.ppdev/<mode>-ledger.md` — survives context compaction. Re-anchor from the file, not memory (LLMs drift in long sessions; the file does not). Consumers: add `.ppdev/` to `.gitignore`.
+  - **Lifecycle — bounded to one active unit, never append-only (or it bloats).** A ledger holds exactly **one** in-flight unit (one arc / one bug / one feature / one refactor). New unit → **overwrite** the file, never append. Progress is recorded **in place** — mark a slice/hypothesis `[x]` or strike it; never add a parallel "update" block. Replan → **edit the table in place**, do not stack a revised copy below the stale one. Unit's DoD met → **clear the file** (or move to `.ppdev/archive/<name>.md` only if explicitly asked to keep it). Steady-state size = one unit's worth (a slice table is ~4–12 rows); if a ledger grows past that, it is being mis-appended — truncate to the current unit.
 
 ## ROUTING
 
 | Mode | Cmd | Trigger | Reference (Read on entry) |
 |---|---|---|---|
+| Plan | `#plan` | big multi-step ask spanning >1 mode or >3 slices | `references/plan.md` |
 | Debug | `#dbg` | bug, "broken/failing/throwing", stack trace | `references/dbg.md` |
 | Feature | `#ft` | "add/build/implement", new capability | `references/ft.md` |
 | Refactor | `#rf` | "clean up/restructure", no behavior change | `references/rf.md` |
@@ -85,13 +87,14 @@ Discipline is backed by `hooks/`, not willpower — the parts that can be enforc
 | Post-mortem | `#pm` | "write the RCA/post-mortem" after a fix lands | `references/pm.md` |
 | Commit/Push | `#cp` | "commit", "push", "save changes" | `references/git-auto.md` |
 
-`#pp` → pick the mode from context; ambiguous → ask one question, stop. **First action on entering any mode: Read its reference file — gates and steps live there.**
+`#pp` → pick the mode from context; ambiguous → ask one question, stop. Ask reveals a big multi-step / cross-mode arc → route to `#plan` first. **First action on entering any mode: Read its reference file — gates and steps live there.**
 
-**Worked example per mode** lives in `examples/<mode>.md` (`dbg`/`ft`/`rf`/`rv`/`pm`/`cp`) — open one on demand to see the gate, banner, and VERIFIED block in action. Not loaded by default, so it costs no context until read.
+**Worked example per mode** lives in `examples/<mode>.md` (`plan`/`dbg`/`ft`/`rf`/`rv`/`pm`/`cp`) — open one on demand to see the gate, banner, and VERIFIED block in action. Not loaded by default, so it costs no context until read.
 
 Security is cross-cutting, not a sixth mode: any mode whose change touches a trust boundary also Reads `references/sec.md` and runs the security gate (Principle 16). "Audit the whole codebase for vulnerabilities" is bigger than this gate → hand off to the `backend-security-audit` skill or `/security-review` (pointers in `sec.md`).
 
 Gate summaries (full checklists in reference files):
+- **GATE 0 `#plan`** — outcome stated as end state + size gate passed (>1 mode / >3 slices / dependency) + unknowns surfaced + whole-arc DoD; too small → refuse and route direct. Plans and hands off, never builds.
 - **GATE 1 `#dbg`** — reliable repro exists; no repro → full stop, no hypothesizing.
 - **GATE 2 `#ft`** — real need stated + ≥3 given/when/then acceptance scenarios + scope IN/OUT bounded.
 - **GATE 3 `#rf`** — safety net + concrete motivation (named smell) + behavior pinned in one sentence.
@@ -101,6 +104,7 @@ Gate summaries (full checklists in reference files):
 
 ## PIPELINE & HANDOFF
 
+Big arc: `#plan` GATE 0 → slice table to ledger → slice 1 → its mode (`#dbg`/`#ft`/`#rf`, full gate) → VERIFIED → `#cp` → next slice … → outcome DoD met → `#rv` over the arc. `#plan` never builds; each slice faces its mode's gate unexempted.
 Bug-fix: `#dbg` → validated fix → (area needs cleanup) `#rf` separate diff → `#rv` before merge → `#pm`.
 Feature: `#ft` GATE 2 → (seam missing) `#rf` first, then return → build in slices → `#rv` before merge.
 `#cp` is the commit step, not a mode — invoke after a mode's work is verified; it inherits no gate but its own (commit hygiene + message rules, `references/git-auto.md`). Message describes only the change — no AI attribution, no off-topic text.

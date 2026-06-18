@@ -16,6 +16,7 @@ Claude Skill ที่เปลี่ยน Claude จาก "AI ที่พ่
 
 | โหมด | คำสั่ง | ใช้เมื่อ |
 |---|---|---|
+| Plan | `#plan` | งานใหญ่หลายขั้น ข้ามหลายโหมด หรือ >3 slices — orchestrate / วางแผน |
 | Debug | `#dbg` | เจอ bug, มี error / stack trace, ของพัง |
 | Feature | `#ft` | เพิ่ม / สร้าง / implement ฟีเจอร์ใหม่ |
 | Refactor | `#rf` | ทำความสะอาด / จัดโครงสร้างโค้ด (ไม่เปลี่ยนพฤติกรรม) |
@@ -24,6 +25,7 @@ Claude Skill ที่เปลี่ยน Claude จาก "AI ที่พ่
 | Commit/Push | `#cp` | commit และ push (ข้อความสะอาด ไม่มี AI attribution) |
 
 - `#pp` — auto-route: ให้ Claude เลือกโหมดเองจากบริบท
+- `#plan` — orchestrator: แตกงานใหญ่เป็น slice (ตาม dependency), tag โหมดให้แต่ละ slice, แล้ว hand off — **ไม่เขียนโค้ดเอง** (เหมือน `#bs`)
 - **Security** เป็นด่านขวาง (cross-cutting) ไม่ใช่โหมดที่ 6 — ทุกการเปลี่ยนแปลงที่แตะ trust boundary (input / auth / token / file / SQL / shell / crypto / secret / network) จะเปิด security gate อัตโนมัติ และ **ปิดไม่ได้**
 
 ---
@@ -54,6 +56,7 @@ git clone https://github.com/Kamisadev/ppdevskill.git ~/.claude/skills/ppdevskil
 ppdevskill/
 ├── SKILL.md              # hub หลัก — กฎ, principles, routing
 ├── references/
+│   ├── plan.md           # GATE 0 + ขั้นตอนโหมด ultra-plan (orchestrator)
 │   ├── dbg.md            # gate + ขั้นตอนโหมด debug
 │   ├── ft.md             # gate + ขั้นตอนโหมด feature
 │   ├── rf.md             # gate + ขั้นตอนโหมด refactor
@@ -66,6 +69,7 @@ ppdevskill/
 │   ├── verify-guard.sh       # Stop hook — บังคับ VERIFIED block ด้วยกลไก
 │   └── settings.snippet.json # config ที่ merge เข้า settings.json
 └── examples/                 # worked example ต่อโหมด — อ่าน on demand
+    ├── plan.md           # ตัวอย่างโหมด ultra-plan (GATE 0 → slice table)
     ├── dbg.md            # ตัวอย่างโหมด debug (gate → VERIFIED)
     ├── ft.md             # ตัวอย่างโหมด feature
     ├── rf.md             # ตัวอย่างโหมด refactor
@@ -84,7 +88,8 @@ chmod +x ~/.claude/skills/ppdevskill/hooks/verify-guard.sh
 
 หลัง merge: response ที่มี ppdevskill banner + อ้างว่าเสร็จ (`done`/`เสร็จ`/`works`) แต่ไม่มี `VERIFIED:`/`NOT VERIFIED:` block → hook **block** + บังคับแก้ในเทิร์นนั้น. **scope เฉพาะ ppdevskill** (ดูจาก banner) — workflow อื่นไม่โดน. **fail-open** — hook พังเมื่อไหร่ = ปล่อยผ่าน ไม่เคย brick session. ต้องมี `jq`.
 
-> **ledger**: `#dbg`/`#ft`/`#rf` เขียน gate state ลง `.ppdev/<mode>-ledger.md` ใน repo ที่ทำงานอยู่ → รอด context compaction. เพิ่ม `.ppdev/` ใน `.gitignore` ของ repo นั้น.
+> **ledger**: `#plan`/`#dbg`/`#ft`/`#rf` เขียน gate state (slice table / hypotheses / scope) ลง `.ppdev/<mode>-ledger.md` ใน repo ที่ทำงานอยู่ → รอด context compaction. เพิ่ม `.ppdev/` ใน `.gitignore` ของ repo นั้น.
+> **ไม่บวม**: ledger เก็บ "1 unit ที่กำลังทำ" เท่านั้น — unit ใหม่ = overwrite (ไม่ append), slice เสร็จ = mark `[x]` ในที่, replan = แก้ table ในที่, DoD ครบ = เคลียร์ไฟล์. ขนาดคงที่ ~1 unit (slice table ~4–12 แถว). โตเกินนั้น = ถูก append ผิด ให้ truncate.
 
 ### 2. เรียกใช้
 
