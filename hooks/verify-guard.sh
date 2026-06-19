@@ -51,8 +51,16 @@ printf '%s' "$TEXT" | grep -Eq '> #(dbg|ft|rf|rv|pm|cp|pp)\b' || allow
 printf '%s' "$TEXT" | grep -q 'VERIFIED:' && allow
 
 # Claim-word present without a verification block -> violation (SKILL.md self-check 8 list).
-CLAIM='done|complete|completed|finished|ready|works|should work|looks good|LGTM|เสร็จ|เสร็จแล้ว|เรียบร้อย|พร้อมใช้|ใช้ได้แล้ว'
-printf '%s' "$TEXT" | grep -Eiq "$CLAIM" || allow
+# ASCII claims are bounded by a non-letter or a string edge -- portable across BSD/GNU/ugrep
+# (\b is non-portable) -- so substrings like "abandoned"/"already"/"workspace"/"framework" do
+# NOT false-trigger. Thai has no word breaks, so Thai claims match as-is.
+# This list MUST stay in sync with SKILL.md self-check 8 (the model-side mirror).
+CLAIM_EN='done|complete|completed|finished|ready|works|should work|looks good|LGTM'
+CLAIM_TH='เสร็จ|เสร็จแล้ว|เรียบร้อย|พร้อมใช้|ใช้ได้แล้ว'
+claimed=0
+printf '%s' "$TEXT" | grep -Eiq "(^|[^a-zA-Z])(${CLAIM_EN})([^a-zA-Z]|\$)" && claimed=1
+printf '%s' "$TEXT" | grep -Eq "$CLAIM_TH" && claimed=1
+[ "$claimed" = 1 ] || allow
 
 # Block: feed the reason back so the model fixes it this turn.
 jq -nc '{

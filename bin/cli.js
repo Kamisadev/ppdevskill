@@ -13,7 +13,7 @@ const readline = require('readline');
 
 const PKG_ROOT = path.resolve(__dirname, '..');
 const pkg = require(path.join(PKG_ROOT, 'package.json'));
-const ITEMS = ['SKILL.md', 'references', 'hooks', 'README.md', 'LICENSE'];
+const ITEMS = ['SKILL.md', 'references', 'examples', 'hooks', 'README.md', 'LICENSE'];
 
 const log = (m) => process.stdout.write(m + '\n');
 const errln = (m) => process.stderr.write(m + '\n');
