@@ -1,0 +1,1 @@
+{"type":"assistant","message":{"role":"assistant","content":[{"type":"thinking","text":"internal reasoning block — the hook must ignore thinking blocks and read only text blocks"},{"type":"text","text":"> #dbg | GATE 1 PASS | STEP 1.2\nrepro reproduced; root cause is the off-by-one in the expiry check"}]}}
