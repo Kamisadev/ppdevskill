@@ -25,9 +25,9 @@ repro เชื่อถือได้ + stack ชี้จุดชัด. อ
 
 **Hypothesis:** บรรทัด 42 `req.user.role` — `req.user` เป็น `null` เมื่อ token decode สำเร็จแต่ user ถูกลบไปแล้ว: `db.findUser(id)` คืน `null` แต่โค้ดไม่เช็กก่อน access `.role`. root cause = missing null guard ไม่ใช่ตัว middleware เอง
 
-> #dbg | GATE 1 PASS | STEP 1.4 fix + verify
+> #dbg | GATE 1 PASS | STEP 1.5 fix + verify
 
-fix: เพิ่ม null check หลัง `db.findUser(id)` → คืน 401 แทน crash
+fix ที่ cause ไม่ใช่ symptom (มันตรา 8): "user หายแต่ token ยังใช้ได้" คือ invariant ที่ควรมี — guard นี้คืนค่า 401 เป็น state ที่ถูกต้อง ไม่ใช่ปิดแผล. เพิ่ม null check หลัง `db.findUser(id)` → คืน 401 แทน crash
 
 ```
 VERIFIED:
@@ -41,4 +41,4 @@ $ curl -H "Authorization: Bearer <stale-token>" localhost:3000/users
 
 ---
 
-**สิ่งที่ตัวอย่างนี้สอน:** ไม่มี repro = หยุด ไม่เดา · hypothesis มาก่อน fix · อ่านเฉพาะไฟล์ที่ hypothesis ต้องการ · ทุกคำว่า "fixed" มี VERIFIED block (คำสั่งจริง + output จริง) · จบงานแล้ว offer `#cp` ไม่ auto-commit
+**สิ่งที่ตัวอย่างนี้สอน:** ไม่มี repro = หยุด ไม่เดา · hypothesis มาก่อน fix · อ่านเฉพาะไฟล์ที่ hypothesis ต้องการ · fix ที่ cause ไม่ใช่ symptom (มันตรา 8) · ทุกคำว่า "fixed" มี VERIFIED block (คำสั่งจริง + output จริง — ควรพิสูจน์ทั้งสองทาง: fix→green, revert→red, มันตรา 9) · จบงานแล้ว offer `#cp` ไม่ auto-commit
