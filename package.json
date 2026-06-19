@@ -15,7 +15,7 @@
     "LICENSE"
   ],
   "scripts": {
-    "test": "sh test/run.sh && node bin/cli.js --version"
+    "test": "sh test/run.sh && sh test/claim-sync.sh && node bin/cli.js --version"
   },
   "keywords": [
     "claude",
