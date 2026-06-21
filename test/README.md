@@ -24,16 +24,21 @@ kept for inspection; the runner builds the per-case fixtures itself.
 | 5 | banner + substrings `already/framework/workspace/abandoned`, no real claim | allow (regression guard) |
 | 6 | empty / unreadable transcript path | allow (fail-open) |
 | 7 | `stop_hook_active:true` | allow (loop guard) |
-| 8 | banner+claim pushed past the `head -200` window | allow — **documented blind spot** |
+| 8 | banner+claim + 205 trailing non-assistant lines | block — **blind spot fixed** (prefilter) |
 | 9 | malformed banner (`>#dbg`, no space) | allow (pins scope regex) |
+| 10 | banner+claim + mid-sentence literal `VERIFIED:` | block (anchored `^…VERIFIED:`) |
 
-## Case 8 is a documented blind spot, not an endorsement
+## Case 8 — blind spot now fixed (anchoring + prefilter)
 
-The hook scans only the last 200 reversed transcript lines for the most recent
-text-bearing assistant message. A claim made before 200+ trailing non-text lines is
-missed. Case 8 pins this **current** behavior so a refactor cannot change it unnoticed —
-it does NOT assert the behavior is correct. Fixing the window is a separate change
-(filed against the v1.4.0 arc, not this slice).
+The hook caps its scan at the last 200 reversed transcript lines. The former blind spot:
+a claim made before 200+ trailing **non-assistant** lines was pushed past the window and
+missed. The hook now **prefilters to assistant lines before the head cap**
+(`reverse … | grep '"type":"assistant"' | head -200`), so trailing user/tool noise can no
+longer evict the claim. Case 8 pins the fixed behavior (now `block`). Case 10 pins the
+companion fix: the `VERIFIED:` check is anchored at line start
+(`^[[:space:]]*(NOT )?VERIFIED:`), so a bare literal `VERIFIED:` quoted mid-sentence no
+longer satisfies the block. A still-open limit: a claim before 200+ *assistant* text lines
+in one turn remains out of window — far beyond any real single turn.
 
 ## What this slice deliberately does NOT do
 

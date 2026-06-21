@@ -77,10 +77,10 @@ asst '> #dbg | GATE 1 PASS
 done' > "$TMP/c7.jsonl"
 check "7 stop_hook_active -> allow (loop guard)" allow "$(run_hook "$TMP/c7.jsonl" true)"
 
-# --- case 8: claim beyond the head -200 window -> allow (DOCUMENTED blind spot) ---
-# Banner+claim is the FIRST line; 205 trailing non-text lines push it past the
-# reversed head -200 window, so the hook never sees it. This pins CURRENT behavior;
-# it does NOT assert the behavior is desirable (see test/README.md + plan-ledger blind-spot note).
+# --- case 8: claim with 205 trailing non-assistant lines -> block (blind spot FIXED) ---
+# Banner+claim is the FIRST line; 205 trailing user lines follow. The hook now prefilters
+# to assistant lines BEFORE the head cap, so the lone assistant claim survives the window
+# and is still caught. This pins the FIXED behavior (was a documented allow blind spot).
 asst '> #dbg | GATE 1 PASS
 done' > "$TMP/c8.jsonl"
 i=0
@@ -88,12 +88,19 @@ while [ "$i" -lt 205 ]; do
   jq -nc '{type:"user",message:{role:"user",content:"noise"}}' >> "$TMP/c8.jsonl"
   i=$((i + 1))
 done
-check "8 claim beyond 200-line window -> allow (blind spot, documented)" allow "$(run_hook "$TMP/c8.jsonl")"
+check "8 claim + 205 trailing non-assistant lines -> block (blind spot fixed)" block "$(run_hook "$TMP/c8.jsonl")"
 
 # --- case 9: malformed banner -> allow (pins scope regex) ---
 asst '>#dbg without a space
 done' > "$TMP/c9.jsonl"
 check "9 malformed banner -> allow" allow "$(run_hook "$TMP/c9.jsonl")"
+
+# --- case 10: banner + claim + a mid-sentence literal "VERIFIED:" -> block (anchoring) ---
+# A bare "VERIFIED:" quoted mid-line (not at line start) must NOT satisfy the block check.
+# The grep is anchored ^[[:space:]]*(NOT )?VERIFIED:, so this still blocks on the claim.
+asst '> #dbg | GATE 1 PASS
+I labelled it VERIFIED: in my notes and it works' > "$TMP/c10.jsonl"
+check "10 mid-sentence VERIFIED: literal -> block (anchored)" block "$(run_hook "$TMP/c10.jsonl")"
 
 # --- summary ---
 printf '\n%s passed, %s failed\n' "$pass" "$fail"

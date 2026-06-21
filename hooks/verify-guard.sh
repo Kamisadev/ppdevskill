@@ -32,6 +32,9 @@ TRANSCRIPT="$(printf '%s' "$INPUT" | jq -r '.transcript_path // empty' 2>/dev/nu
 # Last assistant message that actually contains TEXT. A turn's final transcript lines
 # can be tool_use blocks (no text); scan back (capped) to the most recent text-bearing
 # assistant message. Content may be an array of blocks, a string, or under .message.text.
+# Prefilter to assistant lines BEFORE the head cap so trailing non-assistant noise (a long
+# run of user/tool lines) cannot evict the claim past the window -- closes the former
+# head -200 blind spot (was test case 8). The cap now bounds assistant lines, not all lines.
 TEXT=""
 while IFS= read -r line; do
   case "$line" in *'"type":"assistant"'*) ;; *) continue ;; esac
@@ -41,14 +44,16 @@ while IFS= read -r line; do
     elif type=="string" then .
     else "" end' 2>/dev/null)"
   [ -n "$t" ] && { TEXT="$t"; break; }
-done < <(reverse "$TRANSCRIPT" | head -200)
+done < <(reverse "$TRANSCRIPT" | grep '"type":"assistant"' | head -200)
 [ -z "$TEXT" ] && allow
 
 # Scope: only enforce on ppdevskill responses (identified by the mandatory banner).
 printf '%s' "$TEXT" | grep -Eq '> #(dbg|ft|rf|rv|pm|cp|pp)\b' || allow
 
 # Already has a verification block -> compliant, allow. (Covers VERIFIED: and NOT VERIFIED:.)
-printf '%s' "$TEXT" | grep -q 'VERIFIED:' && allow
+# Anchored at line-start (optional leading whitespace) so a bare literal "VERIFIED:" quoted
+# mid-sentence -- e.g. while explaining these very rules -- does NOT satisfy the check.
+printf '%s' "$TEXT" | grep -Eq '^[[:space:]]*(NOT )?VERIFIED:' && allow
 
 # Claim-word present without a verification block -> violation (SKILL.md self-check 8 list).
 # ASCII claims are bounded by a non-letter or a string edge -- portable across BSD/GNU/ugrep
